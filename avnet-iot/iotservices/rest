@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+cd /opt/avnet-iot/iotservices
+# check for pishrink running and exit if so.
+/bin/bash /opt/avnet-iot/iotservices/checkpishrink
+if [[ $? -ne 0 ]]; then
+    echo -e "\e[31mPiShrink Running delaying REST API service"
+    exit 1
+fi
+echo "Starting Smartedge-iiot-gateway REST API "
+/bin/bash /opt/avnet-iot/iotservices/stopwd
+python -u /opt/avnet-iot/iotservices/rest.py 2>&1 | logger -t rest -p daemon.notice
+echo "RestAPI python restart" >>/var/log/rest.log

@@ -1,0 +1,4 @@
+#!/bin/bash
+version=$(sed -n "s/^API_VERSION = '\(.*\)'/\1/p" avnet-iot/iotservices/rest.py)
+branch=HEAD
+git archive --format=tar.gz -o "avtse-iiot-upgrade-${version}-$(date +%Y%m%d).tar.gz" --prefix="avtse-iiot-${version}/" "${branch}"

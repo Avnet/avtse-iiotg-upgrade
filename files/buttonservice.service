@@ -1,0 +1,10 @@
+[Unit]
+Description=SmartEdge Reset Button service
+
+[Service]
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/button
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=default.target

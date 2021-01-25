@@ -1,0 +1,13 @@
+/var/log/iot.log
+/var/log/button.log
+/var/log/led.log
+/var/log/rest.log
+{
+        rotate 7 
+	daily
+	missingok
+	notifempty
+        delaycompress
+        compress
+	copytruncate
+}

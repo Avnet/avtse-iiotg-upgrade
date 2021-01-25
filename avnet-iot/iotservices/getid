@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/opt/avnet-iot/iotservices/tpm_device_provision </opt/avnet-iot/iotservices/crlf.txt | tr -d "\r\n" | cut -d ':' -f2| cut -b 1-52 | tr -d "\r\n"

@@ -1,0 +1,7 @@
+{
+	"certificate" : { 
+		"SSLKeyPath" : "<< file path >>/key.pem",
+		"SSLCertPath" : "<< file path >>/cert.pem",
+		"SSLCaPath" : "<< file path >>/ca.cert.pem"
+	}
+}

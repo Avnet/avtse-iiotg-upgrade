@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+#stop AP mode
+cp /etc/dhcpcd.conf.default /etc/dhcpcd.conf
+cp /etc/default/hostapd.default /etc/default/hostapd
+cp /etc/dnsmasq.conf.default /etc/dnsmasq.conf
+systemctl daemon-reload
+systemctl disable dnsmasq
+systemctl disable hostapd
+systemctl stop dnsmasq
+systemctl stop hostapd
+systemctl enable wpa_supplicant.service
+systemctl start wpa_supplicant.service
+systemctl restart dhcpcd
+
+#start Station/client mode
+systemctl disable ledservice
+systemctl stop ledservice
+systemctl enable iotconnectservice
+systemctl start iotconnectservice
+systemctl disable restservice
+systemctl stop restservice

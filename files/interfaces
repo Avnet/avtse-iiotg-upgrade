@@ -1,0 +1,37 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+
+# Please note that this file is written to be used with dhcpcd
+# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
+
+# auto can0
+# iface can0 inet manual
+#    pre-up /sbin/ip link set can0 type can bitrate 500000
+#    up /sbin/ifconfig can0 up
+#    down /sbin/ifconfig can0 down
+
+#auto eth0
+#iface eth0 inet dhcp
+
+#auto eth1
+#iface eth1 inet dhcp
+
+
+#iface wlan0 inet static
+# address 192.168.2.1
+# netmask 24
+# network 192.168.2.0
+
+#wireless-power off
+#auto eth0:1
+#iface eth0:1 inet static
+#address 192.168.200.1
+#netmask 255.255.255.0
+
+
+#auto wlan0
+#iface wlan0 inet static
+#      hostapd /etc/hostapd/hostapd.conf
+#      address 192.168.2.1
+#      netmask 255.255.255.0
+# Include files from /etc/network/interfaces.d:
+source-directory /etc/network/interfaces.d

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "Must be run as root"
+  exit 1
+fi
+
+gpio_base=208
+mcu_rstin_n=$((gpio_base+2))
+dev_rstn=$((gpio_base+5))
+if [ ! -d /sys/class/gpio/gpio${mcu_rstin_n} ]; then echo "${mcu_rstin_n}" | tee "/sys/class/gpio/export" >/dev/null 2>&1; fi
+echo high | tee "/sys/class/gpio/gpio${mcu_rstin_n}/direction" >/dev/null 2>&1
+echo 0 | tee "/sys/class/gpio/gpio${mcu_rstin_n}/value" >/dev/null 2>&1
+echo 1 | tee "/sys/class/gpio/gpio${mcu_rstin_n}/value" >/dev/null 2>&1
+echo "${mcu_rstin_n}" | tee "/sys/class/gpio/unexport" >/dev/null 2>&1
+
+if [ ! -d /sys/class/gpio/gpio${dev_rstn} ]; then echo "${dev_rstn}" | tee "/sys/class/gpio/export" >/dev/null 2>&1; fi
+echo high | tee "/sys/class/gpio/gpio${dev_rstn}/direction" >/dev/null 2>&1
+echo 0 | tee "/sys/class/gpio/gpio${dev_rstn}/value" >/dev/null 2>&1
+sleep .1
+echo 1 | tee "/sys/class/gpio/gpio${dev_rstn}/value" >/dev/null 2>&1
+echo "${dev_rstn}" | tee "/sys/class/gpio/unexport" >/dev/null 2>&1
+
+systemctl stop ledservice
+systemctl stop smartedgehalt
+
+echo 20 > /sys/class/leds/smartedge_led/brightness
+echo 128 > /sys/class/leds/smartedge_led_duty/brightness
+
+sleep .2
+
+rmmod attiny_wdt
+modprobe attiny_wdt
+ifconfig eth0 down
+ifconfig eth1 down
+ifconfig wlan0 down
+ifconfig wwan0 down
+sleep 1
+halt

@@ -1,0 +1,87 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+LOGFILE=/var/log/attiny_updates.log
+
+# Up to this version is supported.
+THISHW="1"
+LATESTFW="4"
+
+# Pass FW version as option to go back to previous version
+PROGRAMFW="$1"
+
+[[ -z $PROGRAMFW ]] && { PROGRAMFW=$LATESTFW; }
+
+# check for pishrink running and exit if so.
+#/bin/bash /opt/avnet-iot/iotservices/checkpishrink
+#if [[ $? -ne 0 ]]; then
+#    echo -e "\e[31mPiShrink Running delaying ATTINY UPDATE service"
+#    exit 1
+#fi
+
+echo "Starting Smartedge-iiot-gateway ATTINY UPDATE service"
+CURRENTHW=$(dmesg | grep -o 'ATTINY HW REV [0-9]*' | grep -o '[0-9]*'| tr -d '\n' | tail -c 1)
+CURRENTFW=$(dmesg | grep -o 'ATTINY FW REV [0-9]*' | grep -o '[0-9]*' | tr -d '\n' | tail -c 1)
+
+reprogramdate=$(date)
+
+rm $LOGFILE
+touch $LOGFILE
+chmod 666 $LOGFILE
+
+
+Attiny_update_firmware() {
+    echo 'Reprogramming ATTiny from v'$CURRENTHW'.'$CURRENTFW' to v'$CURRENTHW','$PROGRAMFW' on '$reprogramdate | tee -a $LOGFILE
+    systemctl stop tpm2-abrmd
+    systemctl stop ledservice
+    systemctl stop buttonservice
+    rmmod attiny_led attiny_btn attiny_wdt attiny_mfd
+    cd /opt/avnet-iot/utilities/attiny/ver$CURRENTHW.$PROGRAMFW
+    ./attiny_pgm_avnet.sh avnet_iot_smc.zip | tee -a $LOGFILE
+    if [[ $? -ne 0 ]]; then
+        echo 'ATtiny programming failed' | tee -a $LOGFILE
+    fi
+    sleep 1
+    modprobe attiny_mfd
+    modprobe attiny_btn
+    modprobe attiny_led
+    modprobe attiny_wdt
+    sleep 1
+    while [ ! -c /dev/watchdog1 ];
+    do
+        # Check if we accidentally created /dev/watchdog1 as a regular file
+        if [ -f /dev/watchdog1 ]; then
+            echo "removing regular file /dev/watchdog1"
+            rmmod attiny_wdt
+            rm /dev/watchdog1
+            modprobe attiny_wdt
+        fi
+	echo "waiting for watchdog1"
+	sleep 1
+    done
+    sleep 1
+    # Stop watchdog as previous modprobe re-enabled it.
+    echo V > /dev/watchdog1
+    systemctl enable buttonservice
+    systemctl enable ledservice
+    systemctl start buttonservice
+    systemctl start ledservice
+    systemctl start tpm2-abrmd
+}
+
+#
+# Main code.
+#
+if [[ $CURRENTHW -eq $THISHW ]]; then
+    if [[ $CURRENTFW -ne $PROGRAMFW ]]; then
+	Attiny_update_firmware
+    else
+	echo 'ATTiny up to date' | tee -a $LOGFILE
+    fi
+else
+    echo 'ATTiny hardware version does not match' | tee -a $LOGFILE
+fi

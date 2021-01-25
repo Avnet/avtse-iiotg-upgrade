@@ -1,0 +1,333 @@
+[CloudSDKConfiguration]
+scopeid = One0005A911
+env = avnetpoc
+cpid = B3A7D54220AD4397ABF35D7EC539FBA6
+
+[CloudSystemControl]
+configuration_version = 1
+http_auth_token = https://avnetauth.iotconnect.io/api/v1.1
+http_auth_login = https://avnetauth.iotconnect.io/api/v1.1
+http_device_create = https://avnetdevice.iotconnect.io/api/v1.1
+http_device_template = https://avnetdevice.iotconnect.io/api/v1.1
+http_rule_template = https://avnetdevice.iotconnect.io/api/v1.1
+http_event_template = https://avnetevent.iotconnect.io/api/v1.1
+http_user_template = https://avnetuser.iotconnect.io/api/v1.1
+http_device_firmware = https://avnetfirmware.iotconnect.io/api/v1.1
+template_guid = 
+template_name = 
+display_name = 
+entity_guid = 12F60889-BF0E-402B-A3B4-FFD38BA62D62
+isedgesupport = 0
+isgatewaysupport = 0
+username = 
+password = 
+role = PiRole
+solution-key = QkQ2OTg1MUMtM0M4Ni00NzZGLUJDODctOUJDRThDQ0E4QkU4LWFjY2Vzc0tFWS1pazZhbW8wbmJp
+defaultobjectcount = 10
+defaultcommandcount = 19
+defaultrulecount = 0
+defaultomegarulecount = 0
+defaultsenddelayseconds = 10
+sendtocloudrate = 20
+useiotwatchdog = 0
+enabledebug = 0
+debuglogfile = /var/log/iot.log
+renewaccesstoken = 3600
+
+[OmegaSensorConfiguration]
+usbsensorreport = OnChange
+usbsensorreportpolltime = 10
+usbsensorreportheartbeatcount = 10
+zwrecconnectstatic = Yes
+zwrecconnectdynamic = Yes
+zwrecconnectdynamicnames = All
+zwrecconnectstaticip = All
+zwrecsensorreport = OnChange
+zwrecsensorreportpolltime = 10
+zwrecsensorreportheartbeatcount = 10
+zwrecunits = data
+rs485modbus = No
+rs485modbusslaveaddresses = 1
+rs485modbusbaud = 38400
+rs485modbusparity = E
+rs485modbusstopbits = 1
+rs485modbusdatabits = 8
+rs485mobbusheartbeatcount = 10
+precision = 0
+enabledebug = 0
+
+[CloudSDKDefaultObject1]
+value = NUMBER
+name = CpuTemperature
+report = Polled
+reportpolltime = 300
+pushdataalways = 1
+usepythoninterface = GetTheTemp
+description = This monitors the interal cpu temperature and reports on change
+edgeaggregatetype = Min
+edgetumblingwindow = 1s
+reportheartbeatcount = 1
+units = Celsius
+precision = 1
+
+[CloudSDKDefaultObject2]
+value = STRING
+name = SystemHealth
+report = Polled
+reportpolltime = 3600
+usepythoninterface = SystemHealth
+description = This monitors the SystemHealth
+edgeaggregatetype = Min
+edgetumblingwindow = 1s
+units = String
+reportheartbeatcount = 10
+pushdataalways = 1
+precision = 0
+
+[CloudSDKDefaultObject3]
+value = NUMBER
+name = GetDigitalInput1
+report = OnChange
+reportpolltime = 10
+usepythoninterface = GetDigitalInput1
+description = Returns the state of Digital input 1
+reportheartbeatcount = 100
+units = on-off
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject4]
+value = NUMBER
+name = GetDigitalInput2
+report = OnChange
+reportpolltime = 10
+usepythoninterface = GetDigitalInput2
+description = Returns the state of Digital input 2
+reportheartbeatcount = 100
+units = on-off
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject5]
+value = NUMBER
+name = GetDigitalInput3
+report = OnChange
+reportpolltime = 10
+usepythoninterface = GetDigitalInput3
+description = Returns the state of Digital input 3
+reportheartbeatcount = 100
+units = on-off
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject6]
+value = NUMBER
+name = GetDigitalInput4
+report = OnChange
+reportpolltime = 10
+usepythoninterface = GetDigitalInput4
+description = Returns the state of Digital input 4
+reportheartbeatcount = 100
+units = on-off
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject7]
+value = NUMBER
+name = ProcessMonitor
+report = OnChange
+reportpolltime = 3600
+usepythoninterface = ProcessMonitor
+description = Returns the number of python threads running
+reportheartbeatcount = 100
+units = integer
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject8]
+value = NUMBER
+name = FreeMemory
+report = OnChange
+reportpolltime = 3600
+usepythoninterface = FreeMemory
+description = Returns the amount of free memory
+reportheartbeatcount = 10
+units = integer
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject9]
+value = NUMBER
+name = CpuUtilization
+report = Polled
+reportpolltime = 300
+usepythoninterface = CpuUtilization
+description = Returns the percent cpu utilization
+reportheartbeatcount = 10
+units = integer
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultObject10]
+value = NUMBER
+name = FreeDisk
+report = OnChange
+reportpolltime = 3600
+usepythoninterface = FreeDisk
+description = Returns the number of free bytes on the rootfs
+reportheartbeatcount = 10
+units = integer
+pushdataalways = 0
+precision = 0
+
+[CloudSDKDefaultCommand1]
+commandname = Reboot
+command = Reboot
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = RebootNow
+
+[CloudSDKDefaultCommand2]
+commandname = FactoryDefault
+command = FactoryDefault
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = FactoryDefaultNow
+
+[CloudSDKDefaultCommand3]
+commandname = SetDigitalOutput1Now
+command = SetDigitalOutput1Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = SetDigitalOutput1Now
+
+[CloudSDKDefaultCommand4]
+commandname = SetDigitalOutput2Now
+command = SetDigitalOutput2Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = SetDigitalOutput2Now
+
+[CloudSDKDefaultCommand5]
+commandname = SetDigitalOutput3Now
+command = SetDigitalOutput3Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = SetDigitalOutput3Now
+
+[CloudSDKDefaultCommand6]
+commandname = SetDigitalOutput4Now
+command = SetDigitalOutput4Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = SetDigitalOutput4Now
+
+[CloudSDKDefaultCommand7]
+commandname = ClearDigitalOutput1Now
+command = ClearDigitalOutput1Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = ClearDigitalOutput1Now
+
+[CloudSDKDefaultCommand8]
+commandname = ClearDigitalOutput2Now
+command = ClearDigitalOutput2Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = ClearDigitalOutput2Now
+
+[CloudSDKDefaultCommand9]
+commandname = ClearDigitalOutput3Now
+command = ClearDigitalOutput3Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = ClearDigitalOutput3Now
+
+[CloudSDKDefaultCommand10]
+commandname = ClearDigitalOutput4Now
+command = ClearDigitalOutput4Now
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = ClearDigitalOutput4Now
+
+[CloudSDKDefaultCommand11]
+commandname = Enable SSH
+command = EnableSSH
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = EnableSSH
+
+[CloudSDKDefaultCommand12]
+commandname = Disable SSH
+command = DisableSSH
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = DisableSSH
+
+[CloudSDKDefaultCommand13]
+commandname = SwitchToConfiguration
+command = SwitchToConfiguration
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = SwitchToConfiguration
+
+[CloudSDKDefaultCommand14]
+commandname = Enable REST API
+command = EnableRESTApi
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = EnableRESTApi
+
+[CloudSDKDefaultCommand15]
+commandname = Disable REST API
+command = DisableRESTApi
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = DisableRESTApi
+
+[CloudSDKDefaultCommand16]
+commandname = Enable Led Service
+command = EnableLedService
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = EnableLedService
+
+[CloudSDKDefaultCommand17]
+commandname = Disable Led Service
+command = Disable Led Service
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = DisableLedService
+
+[CloudSDKDefaultCommand18]
+commandname = Enable Button Service
+command = EnableButtonService
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = EnableButtonService
+
+[CloudSDKDefaultCommand19]
+commandname = Disable Button Service
+command = DisableButtonService
+hasparameter = 0
+requiresack = 0
+isiotcommand = 0
+usepythoninterface = DisableButtonService

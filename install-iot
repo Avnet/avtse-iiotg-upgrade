@@ -1,0 +1,206 @@
+#!/bin/bash
+
+# ToDo: This only works on Avnet Gateway -- add checks for HW
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+if ! curl -s -I https://avnet.iotconnect.io. -o /dev/null; then
+    echo "Must have Internet connectivity to install."
+    exit 1
+fi
+
+# Update dependencies
+add_pkg="hostapd dnsmasq dnsutils pydb anacron busybox git libusb-dev nmap udhcpc"
+remove_pkg="apache2"
+
+files_for_copy=(
+    "dhcpcd.conf* /etc/" \
+    "sudoers /etc/" \
+    "profile /etc/" \
+    "dnsmasq.conf* /etc/" \
+    "default.script /usr/share/udhcpc/" \
+    "hostapd* /etc/default/" \
+    "hostapd* /etc/hostapd/" \
+    "*.service /etc/systemd/system/" \
+    "rsyslog.conf /etc/" \
+    "logrotate.conf /etc/" \
+    "ignore-*.conf /etc/rsyslog.d/" \
+    "99-attiny.rules /etc/udev/rules.d/" \
+    "rsyslog /etc/logrotate.d/" \
+    "iotconnect /etc/logrotate.d/" \
+    "rc.local* /etc/" \
+    "default.script /usr/share/udhcpc/" \
+    "quectel-CM /usr/local/bin/" \
+    "kernel7.img /boot/" \
+    "zImage /boot/" \
+    "interfaces /etc/network/" \
+    "tpm_device_provision /opt/avnet-iot/iotservices/" \
+    "tpm_device_provision /usr/bin/" \
+    "IoTConnectSDK.py /usr/local/lib/python2.7/dist-packages/iotconnect_sdk-2.1.1-py2.7.egg/iotconnect/" \
+)
+
+files_for_removal=(
+    "/etc/systemd/system/quectel-service.sh" \
+    "/opt/avnet-iot/utilities/github" \
+)
+
+scriptdir="$(dirname $(realpath $0))"
+
+apt_upgrade ()
+{
+    apt-mark hold raspberrypi-bootloader
+    apt-mark hold raspberrypi-kernel
+    apt-mark hold raspberrypi-sys-mods
+    apt-get purge -y 'php*'
+    apt-get purge -y 'apache*'
+    apt autoremove -y
+    apt update
+    apt upgrade -y
+}
+
+deps_install ()
+{
+    apt update -y
+    apt remove -y $remove_pkg
+    apt install -y $add_pkg
+}
+
+copy_files ()
+(
+    cd "${scriptdir}/files"
+
+    chown root:root *
+    mkdir /usr/share/udhcpc
+    for i in "${files_for_copy[@]}"
+    do
+        cp -aRfv ${i}
+    done
+)
+
+remove_files ()
+{
+    for i in "${files_for_removal[@]}"
+    do
+        [[ -e ${i} ]] && { rm -R ${i}; }
+    done
+}
+
+extract_files ()
+{
+    cp -R "${scriptdir}/avnet-iot" /opt
+}
+
+python_updates ()
+(
+    cd "${scriptdir}/pip"
+
+    rm -rf /home/avnet/.local
+    pip uninstall -y iotconnect-sdk-py2.7
+    pip uninstall -y iotconnect-sdk
+    pip install ntplib
+    pip install pyudev==0.21.0
+    pip install usbinfo
+    pip install psutil
+    pip install minimalmodbus
+    unzip iotconnect-sdk-python-v2.1.1.zip
+    cd iotconect-sdk/
+    tar xf iotconnect-sdk-2.1.1.tar.gz
+    cd iotconnect-sdk-2.1.1/
+    sudo -E python setup.py install
+
+    # Update discovery url
+    sudo sed -i -e 's,//discovery,//rpidiscovery,' "/usr/local/lib/python2.7/dist-packages/iotconnect_sdk-2.1.1-py2.7.egg/iotconnect/assets/config.json"
+)
+
+install_drivers ()
+(
+    cd "${scriptdir}/kernel"
+
+    cp -R lib/* /lib
+)
+
+create_avnet_user ()
+{
+    if [ ! -d /home/avnet ]; then
+        deluser avnet
+        useradd -m -d /home/avnet -g avnet -G root,crontab,adm,tty,dialout,sudo,ssh,iotedge,tss,gpio,i2c -s /bin/bash avnet
+	usermod -a -G dialout root
+        cat /opt/avnet-iot/iotservices/default.txt | chpasswd
+    else
+	usermod -a -G dialout root
+        usermod -g crontab avnet
+        usermod -g netdev avnet
+        usermod -g spi avnet
+    fi
+}
+
+create_fixed_file_log_size ()
+{
+    local size="$1"
+    local file="$2"
+
+    [[ -z $size ]] && { size="100"; }
+    [[ -z $file ]] && { file="/logs.img"; }
+
+    local fstab="$file       /var/log        ext4    loop                       0       0"
+
+    if [[ ! -f $file ]]; then
+        echo "Reserving $size MB for logging: $file"
+        systemctl stop syslog.socket rsyslog.service
+        rm -rf /var/log/*
+        dd if=/dev/zero of=$file bs=1M count=$size > /dev/null
+        mkfs -t ext4 /logs.img > /dev/null
+    fi
+
+    if ! grep -Eq "/var/log" /etc/fstab; then
+        echo "$fstab" >> /etc/fstab
+    fi
+}
+
+enable_wifi_ap_mode ()
+{
+    rm /etc/wpa_supplicant/wpa_supplicant.conf
+    cp /etc/default/hostapd.ap /etc/default/hostapd
+    cp /etc/dhcpcd.conf.ap /etc/dhcpcd.conf
+    cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
+
+    ln -s /opt/avnet-iot/services/bootservice.service /etc/systemd/system/bootservice.service
+    ln -s /opt/avnet-iot/services/attinyupdate.service /etc/systemd/system/attinyupdate.service
+
+    systemctl disable iotconnectservice
+    systemctl stop wpa_supplicant
+    systemctl disable wpa_supplicant
+
+    systemctl daemon-reload
+    systemctl enable dnsmasq hostapd
+    systemctl enable attinyupdate bootservice quectel hwclock-start buttonservice ledservice restservice
+}
+
+restore_reboot ()
+{
+    rm /sbin/reboot
+    ln -s /bin/systemctl /sbin/reboot
+}
+
+pkill startup.sh
+pkill python
+iotstop
+apt_upgrade
+deps_install
+remove_files
+extract_files
+python_updates
+copy_files
+install_drivers
+create_fixed_file_log_size 100
+create_avnet_user
+enable_wifi_ap_mode
+restore_reboot
+
+read -p "Installation complete, press ENTER to reboot"
+cd ..
+rm -Rf "${scriptdir}"
+reboot

@@ -1,0 +1,4 @@
+# Make read-only with group i2c
+KERNEL=="button", MODE="0440", GROUP="i2c"
+KERNEL=="reset",  MODE="0440", GROUP="i2c"
+KERNEL=="resetfactory",  MODE="0440", GROUP="i2c"

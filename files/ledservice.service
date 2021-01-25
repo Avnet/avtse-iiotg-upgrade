@@ -1,0 +1,11 @@
+[Unit]
+Description=Smartedge-iiot-gateway Top LED service
+
+[Service]
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/led   
+ExecStop=/bin/echo 0 >/sys/class/leds/green/brightness
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=default.target

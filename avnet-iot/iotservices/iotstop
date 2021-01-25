@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+systemctl stop iotconnectservice
+systemctl stop ledservice
+echo 0 > /sys/class/leds/smartedge_led/brightness
+echo 0 > /sys/class/leds/smartedge_led_duty/brightness

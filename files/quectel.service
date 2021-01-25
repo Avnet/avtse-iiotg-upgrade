@@ -1,0 +1,10 @@
+[Unit]
+Description=Automatic Quectel cellular connection service
+
+[Service]
+ExecStart=/usr/bin/stdbuf -oL -eL /opt/avnet-iot/services/quectel-service.sh
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

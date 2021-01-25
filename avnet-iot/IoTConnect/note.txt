@@ -1,0 +1,30 @@
+IOTConnect SDK - With TPM Simulator
+
+Remove iotconnect-sdk-py2.7 if already used
+- pip uninstall iotconnect-sdk-py2.7
+
+Install package inside packages folder
+- pip install iotconnect-sdk-simulator-py2.7-2.0.tar.gz
+
+Open terminal/Command prompt
+- execute Simulator.exe inside utility folder
+
+Open another terminal/Command prompt
+- execute tpm_device_provision.exe inside utility folder
+
+Create device from Iotconnect portal [Note: we have already created one device with device id "DPSDevice2"]
+
+Exceute example.py inside sample folder
+====================================================================
+IOTConnect SDK - Actual TPM
+
+Remove iotconnect-sdk-simulator-py2.7 if already used
+- pip uninstall iotconnect-sdk-simulator-py2.7
+
+Install package inside packages folder
+- pip install iotconnect-sdk-py2.7-2.0.tar.gz
+
+Create device from Iotconnect portal [Note: we have already created one device with device id "DPSDevice2"]
+
+Exceute example.py inside sample folder
+

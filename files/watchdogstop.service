@@ -1,0 +1,10 @@
+[Unit]
+Description=Smartedge-iiot-gateway hardware watchdog disable
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/stopwd
+ExecStop=/bin/true
+
+[Install]
+WantedBy=default.target

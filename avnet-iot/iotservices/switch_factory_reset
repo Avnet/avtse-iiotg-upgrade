@@ -1,0 +1,83 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+## Perform factory reset
+
+rm /opt/avnet-iot/IoTConnect/sample/install*
+rm -R /opt/avnet-iot/IoTConnect/sample/updates
+rm -R /home/avnet/*
+
+history -c
+rm /home/avnet/.bash_history
+rm /root/.bash_history
+rm /etc/ssh/ssh_host_*
+rm /etc/*.txt
+rm /etc/machine-id
+rm /etc/dhcpcd.secret
+rm /etc/dhcpcd.duid
+rm -R /var/cache/apt/archives/*
+rm /etc/apn.conf
+rm /etc/hostapd/hostapd.conf
+rm /etc/wpa_supplicant/wpa_supplicant.conf*
+rm /etc/wpa_supplicant/wpa_supplicant.backup
+rm -R /var/log/*
+find / -name '*~' -exec rm -rf {} \;
+find / -name '*.swp' -exec rm -rf {} \;
+find / -name '#*#' -exec rm -rf {} \;
+touch /etc/machine-id
+apt-mark hold raspberrypi-bootloader
+apt-mark hold raspberrypi-kernel
+apt-mark hold raspberrypi-sys-mods
+service ssh stop
+systemctl disable ssh
+systemctl enable regenerate_ssh_host_keys
+
+rm -f /tmp/ip_address
+rm -f /tmp/iotconnect.txt
+
+cp /opt/avnet-iot/iotservices/files/dhcpcd.conf.* /etc/.
+cp /opt/avnet-iot/iotservices/files/dnsmasq.conf.* /etc/.
+cp /opt/avnet-iot/iotservices/files/default.script /usr/share/udhcpc/.
+cp /opt/avnet-iot/iotservices/files/hostapd.ap /etc/default/.
+cp /opt/avnet-iot/iotservices/files/hostapd.default /etc/default/.
+cp /opt/avnet-iot/iotservices/files/*.service /etc/systemd/system/.
+
+cp /opt/avnet-iot/IoTConnect/sample/IoTConnectSDK.conf.default /opt/avnet-iot/IoTConnect/sample/IoTConnectSDK.conf
+cp /etc/default/hostapd.ap /etc/default/hostapd
+cp /etc/dhcpcd.conf.ap /etc/dhcpcd.conf
+cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
+
+systemctl daemon-reload
+systemctl disable iotconnectservice
+#Don't stop iotconnectservice; this script may be running under it.
+#systemctl stop iotconnectservice
+systemctl enable restservice
+systemctl disable hostapd.service
+systemctl disable dnsmasq.service
+rm /etc/systemd/system/attinyupdate.service
+ln -s /opt/avnet-iot/services/attinyupdate.service /etc/systemd/system/attinyupdate.service
+rm /etc/systemd/system/bootservice.service
+ln -s /opt/avnet-iot/services/bootservice.service /etc/systemd/system/bootservice.service
+systemctl enable attinyupdate.service
+systemctl enable bootservice.service
+systemctl enable quectel.service
+
+rm /sbin/reboot
+ln -s /bin/systemctl /sbin/reboot
+history -c
+
+if [ -d /home/avnet ]; then
+    echo "Already exists"
+else
+    deluser avnet
+    useradd -m -d /home/avnet -g avnet -G root,crontab,adm,tty,dialout,sudo,ssh,iotedge,tss,gpio,i2c -s /bin/bash avnet
+    cat /opt/avnet-iot/iotservices/default.txt | chpasswd
+fi
+systemctl disable wpa_supplicant.service
+systemctl stop wpa_supplicant.service
+
+/bin/bash /opt/avnet-iot/iotservices/reboot

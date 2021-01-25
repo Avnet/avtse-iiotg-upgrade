@@ -1,0 +1,62 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+# Expects valid /etc/wpa_supplicant/wpa_supplicant.conf file
+# Script switches from AP mode to WiFi Client mode.
+# If WiFi Client mode fails to connect, script switches back to WiFi AP mode.
+# If successful, calls wifi_client to switch to normal operating state.
+
+# stop AP mode
+cp /etc/dhcpcd.conf.default /etc/dhcpcd.conf
+cp /etc/default/hostapd.default /etc/default/hostapd
+cp /etc/dnsmasq.conf.default /etc/dnsmasq.conf
+systemctl daemon-reload
+systemctl disable dnsmasq
+systemctl disable hostapd
+systemctl stop dnsmasq
+systemctl stop hostapd
+systemctl enable wpa_supplicant.service
+systemctl start wpa_supplicant.service
+systemctl restart dhcpcd
+touch /tmp/wifi.txt
+
+# start client mode
+timeout=30
+while [ $timeout -gt 0 ]
+do
+  output=$(wpa_cli -i wlan0 status)
+  if [[ $output == *"wpa_state=COMPLETED"* ]] && [[ $output == *"ip_address"* ]]; then
+    echo "wifi found: $output" >> /tmp/wifi.txt
+    ./wifi_client
+    exit 0
+  elif [[ $output == *"wpa_state=4WAY_HANDSHAKE"* ]]; then
+    echo "wifi wrong PSK: $output" >> /tmp/wifi.txt
+    break;
+  elif [[ $output == *"wpa_state=SCANNING"* ]]; then
+    echo "scanning" # still scanning -- not saving this file..
+  fi
+  sleep 1
+  timeout=$[$timeout-1]
+done
+
+# go back to AP mode
+echo "Going back to AP mode" >> /tmp/wifi.txt
+systemctl disable wpa_supplicant.service
+systemctl stop wpa_supplicant.service
+rm /etc/wpa_supplicant/wpa_supplicant.conf
+systemctl stop dnsmasq
+systemctl stop hostapd
+systemctl stop dhcpcd
+cp /etc/dhcpcd.conf.ap /etc/dhcpcd.conf
+cp /etc/default/hostapd.ap /etc/default/hostapd
+cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
+systemctl daemon-reload
+systemctl enable dnsmasq
+systemctl enable hostapd
+systemctl start hostapd
+systemctl start dnsmasq
+systemctl start dhcpcd

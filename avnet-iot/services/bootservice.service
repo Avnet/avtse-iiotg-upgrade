@@ -1,0 +1,9 @@
+[Unit]
+Description=Smartedge-iiot-gateway factory default service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/boot 
+
+[Install]
+WantedBy=default.target

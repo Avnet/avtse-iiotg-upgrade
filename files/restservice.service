@@ -1,0 +1,10 @@
+[Unit]
+Description=Smartedge-iiot-gateway REST API service (OOBE)
+
+[Service]
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/rest
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=default.target

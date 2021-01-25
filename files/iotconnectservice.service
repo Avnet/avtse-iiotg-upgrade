@@ -1,0 +1,11 @@
+[Unit]
+Description=Smartedge-iiot-gateway IoTConnect SDK service
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/iotconnect
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+# check for pishrink running and exit if so.
+/bin/bash /opt/avnet-iot/iotservices/checkpishrink
+if [[ $? -ne 0 ]]; then
+    echo -e "\e[31mPiShrink Running delaying SDK service"
+    exit 1
+fi
+
+echo "Starting Smartedge-iiot-gateway SDK "
+/bin/bash /opt/avnet-iot/iotservices/stopwd
+cd /opt/avnet-iot/IoTConnect/sample
+if ping -q -c 1 -W 1 8.8.8.8 > /dev/null; then
+    python -u /opt/avnet-iot/IoTConnect/sample/example.py | tee -a /var/log/iot.log
+else
+    echo "No network, restarting in 10 seconds" | tee -a /var/log/iot.log
+fi

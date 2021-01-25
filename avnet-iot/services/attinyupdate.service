@@ -1,0 +1,9 @@
+[Unit]
+Description=Controls ATTINY flash update 
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/avnet-iot/iotservices/attiny_flash
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
+cd /opt/avnet-iot/iotservices
+rm /sbin/reboot
+ln -s /opt/avnet-iot/iotservices/reboot /sbin/reboot
+cp /opt/avnet-iot/iotservices/files/hostapd.conf /etc/hostapd/hostapd.conf
+cat /proc/cpuinfo | grep Serial | cut -d ':' -f2 | cut -b 10-17 | tr -d "\r\n" | tr -d " " >>/etc/hostapd/hostapd.conf
+sleep 2
+
+cp /etc/default/hostapd.ap /etc/default/hostapd
+cp /etc/dhcpcd.conf.ap /etc/dhcpcd.conf
+cp /etc/dnsmasq.conf.ap /etc/dnsmasq.conf
+systemctl daemon-reload
+systemctl enable dhcpcd
+systemctl enable hostapd
+systemctl enable dnsmasq
+systemctl start hostapd
+systemctl start dnsmasq
+systemctl start dhcpcd
