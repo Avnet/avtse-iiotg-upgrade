@@ -102,7 +102,7 @@ python_updates ()
     pip uninstall -y iotconnect-sdk
     pip install ntplib
     pip install pyudev==0.21.0
-    pip install usbinfo
+    pip install usbinfo==1.1.0
     pip install psutil
     pip install minimalmodbus
     unzip iotconnect-sdk-python-v2.1.1.zip
